@@ -13,16 +13,17 @@ public class WindowHockeyLauncher implements INetworkListener {
 	public static final String PROGRAM_NAME = "WindowHockey";
 	
 	WindowHockey game;
-	HockeySettings settings;
+	HockeyProfile settings;
 	ConnectionManager cmanager;
 
 	public static void main(String[] args) {
-		HockeySettings settings = new HockeySettings();
+		HockeyProfile settings = new HockeyProfile();
 		JCommander jc = new JCommander(settings);
 		jc.setProgramName(PROGRAM_NAME);
 		try {
 			jc.parse(args);
 		} catch (Exception e) {
+			e.printStackTrace();
 			if (e instanceof ParameterException) System.err.println(e.getMessage());
 			jc.usage();
 			return;
@@ -30,11 +31,11 @@ public class WindowHockeyLauncher implements INetworkListener {
 		new WindowHockeyLauncher(settings);
 	}
 	
-	public WindowHockeyLauncher(HockeySettings settings) {
+	public WindowHockeyLauncher(HockeyProfile settings) {
 		this.settings = settings;
 		System.out.format("Welcome %s\n", this.settings.username);
 		
-		if (this.settings.isServer()) {
+		if (!this.settings.isServer()) {
 			connectToGame();
 		} else {
 			// setup server
@@ -44,22 +45,23 @@ public class WindowHockeyLauncher implements INetworkListener {
 				cmanager = new ConnectionManager();
 			
 			cmanager.addNetworkListener(this);
+			System.out.println("Waiting for connection...");
 		}
 	}
 	
 	@Override
 	public void onConnection(Connection pCon) {
 		// check if the game is already running
-		if (game == null)
-			startGame(pCon, true);
-		else
+		if (game == null) {
+			startGame(pCon);
+		} else
 			pCon.close();
 	}
 	
 	private void connectToGame() {
 		Connection conn;
 		try {
-			if (this.settings.isServer())
+			if (this.settings.portNumber != null)
 				conn = ConnectionManager.connect(this.settings.targetHost, this.settings.portNumber);
 			else 
 				conn = ConnectionManager.connect(this.settings.targetHost);
@@ -67,11 +69,25 @@ public class WindowHockeyLauncher implements INetworkListener {
 			System.err.format("Unable to connect: %s\n", e.getMessage());
 			return;
 		}
-		startGame(conn, false);
+		startGame(conn);
 	}
 	
-	private void startGame(Connection conn, boolean isServer) {
+	private void startGame(Connection conn) {
 		System.out.println("Starting game.");
-		game = new WindowHockey(conn);
+		game = new WindowHockey(this, conn, this.settings);
+	}
+	
+	public void onGameEnd() {
+		game = null;
+		
+		// check if server should continue
+		if (this.settings.isServer()) {
+			if (this.settings.persistentListening) {
+				System.out.println("Waiting for connection...");
+			}
+		} else {
+			if (this.cmanager != null) this.cmanager.stop();
+			System.exit(0);
+		}
 	}
 }
