@@ -1,22 +1,22 @@
 package shylux.java.windowhockey;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class Puck extends JFrame {
+public class Puck extends TransparentWindow {
 	private BufferedImage background;
 	
 	public Puck() {
+		super();
+
 		setContentPane(new DrawPane());
 		
-		setUndecorated(true);
-		setBackground(new Color(0f, 0f, 0f, 0f));
 		try {
 			this.background = ImageIO.read(getClass().getResource("/shylux/java/windowhockey/resources/puck.png"));
 		} catch (IOException e) {
@@ -40,5 +40,10 @@ public class Puck extends JFrame {
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
 		}
+	}
+	
+	public Vector2D getAbsoluteCenterPoint() {
+		Point root = this.getLocation();
+		return new Vector2D(root.x + getWidth()/2, root.y + getHeight()/2);
 	}
 }

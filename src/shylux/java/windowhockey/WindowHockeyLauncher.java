@@ -49,7 +49,6 @@ public class WindowHockeyLauncher implements INetworkListener {
 		}
 	}
 	
-	@Override
 	public void onConnection(Connection pCon) {
 		// check if the game is already running
 		if (game == null) {
@@ -89,5 +88,10 @@ public class WindowHockeyLauncher implements INetworkListener {
 			if (this.cmanager != null) this.cmanager.stop();
 			System.exit(0);
 		}
+	}
+
+	public void onGameEnd(boolean didIWin) {
+		System.out.println((didIWin)?"He won.":"He lost.");
+		onGameEnd();
 	}
 }

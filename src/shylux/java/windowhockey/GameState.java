@@ -3,6 +3,8 @@ package shylux.java.windowhockey;
 import java.io.Serializable;
 import java.util.UUID;
 
+import shylux.java.windowhockey.HockeyProfile.ExitBinding;
+
 
 public class GameState implements Serializable, Cloneable {
 
@@ -27,6 +29,22 @@ public class GameState implements Serializable, Cloneable {
 		GameState newState = update(state, state.getPuckPosition(), state.getVelocity());
 		newState.currentMaster = newMaster;
 		return newState;
+	}
+	
+	public static GameState processEntryPoint(GameState state, ExitBinding direction, WindowHockey parent) {
+		Vector2D newPosition = null;
+		Vector2D newVelocity = null;
+		switch (direction) {
+		case WEST:
+			newPosition = new Vector2D(0, state.getPuckPosition().y());
+			newVelocity = (state.getVelocity().x() > 0) ? state.getVelocity() : new Vector2D(-state.getVelocity().x(), state.getVelocity().y());
+			break;
+		case EAST:
+			newPosition = new Vector2D(WindowHockeyUtils.getRelativeScreenWidth(parent.puck)-parent.profile.puckDimensions, state.getPuckPosition().y());
+			newVelocity = (state.getVelocity().x() < 0) ? state.getVelocity() : new Vector2D(-state.getVelocity().x(), state.getVelocity().y());
+			break;
+		}
+		return GameState.update(state, newPosition, newVelocity);
 	}
 	
 	private long gameTick = 0;

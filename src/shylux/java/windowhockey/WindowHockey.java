@@ -5,7 +5,9 @@ import java.util.concurrent.TimeUnit;
 
 import shylux.java.network.Connection;
 import shylux.java.network.IConnectionListener;
+import shylux.java.windowhockey.network.GameEndFrame;
 import shylux.java.windowhockey.network.PingFrame;
+import shylux.java.windowhockey.network.TransferFrame;
 import srasul.WestCoastScheduledExecutor;
 
 public class WindowHockey implements IConnectionListener {
@@ -20,6 +22,7 @@ public class WindowHockey implements IConnectionListener {
 	GameState state;
 
 	Puck puck;
+	Goal goal;
 	
 	public WindowHockey(WindowHockeyLauncher launcher, Connection conn, HockeyProfile profile) {
 		this.launcher = launcher;
@@ -35,7 +38,6 @@ public class WindowHockey implements IConnectionListener {
 		System.out.println("I am a server? "+profile.isServer());
 	}
 
-	@Override
 	public void onMessage(Object o) {
 		//System.out.println("got object "+o.getClass().toString());
 		// Initial hand shake
@@ -65,10 +67,23 @@ public class WindowHockey implements IConnectionListener {
 		if (o instanceof GameState) {
 			// update game state
 			if (this.state == null) initiateGame(false);
+			if (isMaster()) return; // no one can command me!
 			GameState gamestate = (GameState) o;
 			//System.out.println("Got state: "+gamestate.getGameTick()+gamestate.getPuckPosition());
 			state = gamestate;
 			render();
+		}
+		if (o instanceof TransferFrame) {
+			TransferFrame tframe = (TransferFrame) o;
+			state = tframe.getState();
+			state = GameState.processEntryPoint(state, profile.getExitBinding(), this);
+			processTick();
+			puck.setVisible(true);
+			render();
+		}
+		if (o instanceof GameEndFrame) {
+			GameEndFrame eframe = (GameEndFrame) o;
+			endGame(this.profile.id.equals(eframe.getWinner()));
 		}
 	}
 	
@@ -77,6 +92,9 @@ public class WindowHockey implements IConnectionListener {
 		this.puck = new Puck();
 		this.state = new GameState(this, (isMaster)?profile.id:opponent.id);
 		this.puck.initialize(this);
+		
+		// goal
+		this.goal = new Goal(profile);
 		
 		// start ping schedule
 		exec = new WestCoastScheduledExecutor(2);
@@ -92,7 +110,7 @@ public class WindowHockey implements IConnectionListener {
 				if (conn.isClosed()) return;
 				// One game tick
 				// current master may change on tick.. not very elegant :P
-				boolean isMaster = state.getCurrentMaster().equals(profile.id);
+				boolean isMaster = isMaster();
 				processTick();
 				if (isMaster) {
 					conn.sendMessage(state);
@@ -105,21 +123,42 @@ public class WindowHockey implements IConnectionListener {
 			public void run() {
 				if (conn.isClosed()) return;
 				abortGame("debug");
-			}}, 5, TimeUnit.SECONDS);
+			}}, 15, TimeUnit.SECONDS);
 		
 	}
 	
 	private void processTick() {
-		System.out.println("Calculate tick: "+state.getGameTick());
+		System.out.format("%s tick: %d\n", (isMaster())?"Calculate":"Simulate", state.getGameTick());
 		
 		Vector2D nextPosition = state.getPuckPosition().plus(state.getVelocity());
+
+		Vector2D newVelocity = WindowHockeyUtils.applyMouseForce(profile, puck, state);
 		
-		Vector2D newVelocity = state.getVelocity();
+		if (puck.intersects(goal)) {
+			// i lost.
+			conn.sendMessage(new GameEndFrame(this.opponent.id));
+			endGame(false);
+		}
+		
 		// vertical collision
 		if (nextPosition.y() < 0 || nextPosition.y()+profile.puckDimensions > 1) newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), false);
 		
 		
-		boolean doTransfer = false;
+		// collision west wall
+		if (nextPosition.x() < 0) {
+			switch (profile.getExitBinding()) {
+			case EAST:
+				// collision with goal wall -> bounce
+				newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), true);
+				break;
+			case WEST:
+				// collision with exit wall -> transfer game master rights
+				System.out.println("Collision west, transfer!");
+				transferMaster();
+				return;
+			}
+		}
+		
 		// collision east wall
 		if (nextPosition.x() > WindowHockeyUtils.getRelativeScreenWidth(puck)) {
 			switch (profile.getExitBinding()) {
@@ -130,44 +169,52 @@ public class WindowHockey implements IConnectionListener {
 			case EAST:
 				// collision with exit wall -> transfer game master rights
 				System.out.println("Collision each, transfer!");
-				doTransfer = true;
+				transferMaster();
+				return;
 			}
 		}
 		
-		// collision west wall
-		if (nextPosition.x()+profile.puckDimensions < 0) {
-			switch (profile.getExitBinding()) {
-			case EAST:
-				// collision with goal wall -> bounce
-				newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), true);
-			case WEST:
-				// collision with exit wall -> transfer game master rights
-				System.out.println("Collision west, transfer!");
-				doTransfer = true;
-			}
-		}
-		
-		if (doTransfer) {
-			state = GameState.update(state, this.opponent.id);
-		} else {
-			state = GameState.update(state, nextPosition, newVelocity);
-		}
+		state = GameState.update(state, nextPosition, newVelocity);
 	}
 	
 	private void render() {
-		WindowHockeyUtils.applyPuckLocation(state, puck);
+		if (isMaster()) {
+			puck.setVisible(true);
+			WindowHockeyUtils.applyPuckLocation(state, puck);
+		} else
+			puck.setVisible(false);
 	}
 
-	@Override
 	public void onClose() {
 		abortGame("Connection closed.");
 	}
 	
-	public void abortGame(String reason) {
+	private void endGame(boolean didIWin) {
+		System.out.println((didIWin)?"Horrray im a winner":"Meh...");
+		cleanUp();
+		this.launcher.onGameEnd(didIWin);
+	}
+	
+	private void abortGame(String reason) {
 		System.err.format("Aborting game: %s\n", reason);
+		cleanUp();
+		this.launcher.onGameEnd();
+	}
+	
+	private void cleanUp() {
+		this.puck.setVisible(false);
+		this.goal.setVisible(false);
 		if (!this.conn.isClosed()) this.conn.close();
 		exec.shutdownNow();
-		this.puck.dispose();
-		this.launcher.onGameEnd();
+	}
+	
+	private boolean isMaster() {
+		return this.state.getCurrentMaster().equals(this.profile.id);
+	}
+	
+	public void transferMaster() {
+		if (!isMaster()) return;
+		conn.sendMessage(new TransferFrame(state, this.opponent.id));
+		state = GameState.update(state, this.opponent.id);
 	}
 }

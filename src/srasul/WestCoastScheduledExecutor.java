@@ -38,7 +38,6 @@ public class WestCoastScheduledExecutor extends ScheduledThreadPoolExecutor {
                         this.theRunnable = theRunnable;
                 }
 
-                @Override
                 public void run() {
                         try {
                                 theRunnable.run();

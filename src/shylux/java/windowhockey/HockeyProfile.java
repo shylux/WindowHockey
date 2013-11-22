@@ -46,10 +46,17 @@ public class HockeyProfile implements Serializable {
 	@Parameter(names = {"-h", "-host"}, description = "Target host to connect.")
 	String targetHost;
 	@Parameter(names = {"-p", "-port"}, description = "Port to listen or if host defined port on target host.")
-	Integer portNumber;
+	Integer portNumber = 8228;
 	
 	@Parameter(names = "-persistent", description = "Waits automatically for new connection once the game has finished.")
 	transient boolean persistentListening = false;
+	
+	double mouseInfluenceRadius = .2;
+	double mouseMaxInfluenceRate = .005;
+	double maxPuckSpeed = 0.02;
+	// x y
+	double[] goalSize = new double[] {.05, .2};
+	
 	
 	// the hidden in the annotation does hide it from help text. nothing to do with actual value.
 	@Parameter(names = "-hidden", hidden = true)

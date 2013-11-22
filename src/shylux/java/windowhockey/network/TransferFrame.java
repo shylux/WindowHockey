@@ -9,10 +9,20 @@ public class TransferFrame implements Serializable {
 	private static final long serialVersionUID = -389805120454556898L;
 
 	GameState state;
+
 	UUID newMaster;
 
 	public TransferFrame(GameState state, UUID newMaster) {
-		this.state = state;
+		System.out.println("##############################Tranfer!");
+		this.state = GameState.update(state, newMaster);
 		this.newMaster = newMaster;
+	}
+	
+	public GameState getState() {
+		return state;
+	}
+
+	public UUID getNewMaster() {
+		return newMaster;
 	}
 }
