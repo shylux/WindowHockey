@@ -23,8 +23,7 @@ public class HockeyProfile implements Serializable {
 	private static final long serialVersionUID = 5941466079359778114L;
 
 	enum ExitBinding {EAST, WEST}
-	
-	// SETTINGS NOT MEANT TO CHANGE
+
 	public final double puckDimensions = 0.1;
 	
 	@Parameter(names = "-fps", description = "Frames per second cap.")
@@ -51,9 +50,9 @@ public class HockeyProfile implements Serializable {
 	@Parameter(names = "-persistent", description = "Waits automatically for new connection once the game has finished.")
 	transient boolean persistentListening = false;
 	
-	double mouseInfluenceRadius = .2;
-	double mouseMaxInfluenceRate = .005;
-	double maxPuckSpeed = 0.02;
+	double mouseInfluenceRadius = .3;
+	double mouseMaxInfluenceRate = .007;
+	double maxPuckSpeed = 0.03;
 	// x y
 	double[] goalSize = new double[] {.05, .2};
 	
