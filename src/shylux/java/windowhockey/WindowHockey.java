@@ -117,14 +117,6 @@ public class WindowHockey implements IConnectionListener {
 				}
 				render();
 			}}, 50, 1000 / profile.fps, TimeUnit.MILLISECONDS);
-
-		// simulate running game
-		exec.schedule(new Runnable() {
-			public void run() {
-				if (conn.isClosed()) return;
-				abortGame("debug");
-			}}, 15, TimeUnit.SECONDS);
-		
 	}
 	
 	private void processTick() {
