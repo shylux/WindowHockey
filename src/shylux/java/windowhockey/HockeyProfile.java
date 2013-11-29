@@ -22,7 +22,7 @@ public class HockeyProfile implements Serializable {
 	 */
 	private static final long serialVersionUID = 5941466079359778114L;
 
-	enum ExitBinding {EAST, WEST}
+	enum ExitBinding {LEFT, RIGHT}
 
 	public final double puckDimensions = 0.1;
 	
@@ -46,9 +46,15 @@ public class HockeyProfile implements Serializable {
 	String targetHost;
 	@Parameter(names = {"-p", "-port"}, description = "Port to listen or if host defined port on target host.")
 	Integer portNumber = 8228;
-	
-	@Parameter(names = "-persistent", description = "Waits automatically for new connection once the game has finished.")
+
+	@Parameter(names = "-persistent", description = "Continue listening after game end.")
 	transient boolean persistentListening = false;
+	
+	@Parameter(names = "-tcp", description = "Only TCP server.")
+	transient boolean onlyTCP = false;
+	
+	@Parameter(names = "-udp", description = "Only UDP server.")
+	transient boolean onlyUDP = false;
 	
 	double mouseInfluenceRadius = .3;
 	double mouseMaxInfluenceRate = .007;
@@ -70,7 +76,7 @@ public class HockeyProfile implements Serializable {
 			if (binding.name().equalsIgnoreCase(exitBinding)) return binding;
 		}
 		// meh
-		return ExitBinding.EAST;
+		return ExitBinding.RIGHT;
 	}
 	
 	// TODO not working atm. i think i got an older version of jcommander

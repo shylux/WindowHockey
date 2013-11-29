@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.Image;
 import java.awt.Insets;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Goal extends TransparentWindow {
@@ -16,6 +17,9 @@ public class Goal extends TransparentWindow {
 		JPanel pane = new JPanel();
 		pane.setBackground(Color.BLACK);
 		setContentPane(pane);
+		
+		// cancel if no output is preferred
+		if (profile.hidden) return;
 		
 		setVisible(true);
 		
@@ -29,10 +33,10 @@ public class Goal extends TransparentWindow {
 		Insets bounds = WindowHockeyUtils.getAvailableScreenBounds(this);
 		int locX = 0;
 		switch(profile.getExitBinding()) {
-		case EAST:
+		case RIGHT:
 			locX = 0;
 			break;
-		case WEST:
+		case LEFT:
 			locX = (int) (bounds.right - this.getSize().getWidth());
 			break;
 		}

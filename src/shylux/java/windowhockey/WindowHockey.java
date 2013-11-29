@@ -3,15 +3,17 @@ package shylux.java.windowhockey;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import shylux.java.network.Connection;
 import shylux.java.network.IConnectionListener;
+import shylux.java.network.TCPConnection;
 import shylux.java.windowhockey.network.GameEndFrame;
 import shylux.java.windowhockey.network.PingFrame;
 import shylux.java.windowhockey.network.TransferFrame;
 import srasul.WestCoastScheduledExecutor;
 
 public class WindowHockey implements IConnectionListener {
-	Connection conn;
+	enum PowerUp {Unstoppable}
+	
+	TCPConnection conn;
 	HockeyProfile profile;
 	HockeyProfile opponent;
 	ScheduledExecutorService exec;
@@ -24,7 +26,7 @@ public class WindowHockey implements IConnectionListener {
 	Puck puck;
 	Goal goal;
 	
-	public WindowHockey(WindowHockeyLauncher launcher, Connection conn, HockeyProfile profile) {
+	public WindowHockey(WindowHockeyLauncher launcher, TCPConnection conn, HockeyProfile profile) {
 		this.launcher = launcher;
 		this.profile = profile;
 		this.conn = conn;
@@ -90,7 +92,7 @@ public class WindowHockey implements IConnectionListener {
 	private void initiateGame(boolean isMaster) {
 		System.out.println("Initiate Game");
 		this.puck = new Puck();
-		this.state = new GameState(this, (isMaster)?profile.id:opponent.id);
+		this.state = GameState.setup((isMaster)?profile.id:opponent.id, new Vector2D(.5,.5), Vector2D.fromAngle(Math.random()*Math.PI*2,.005));
 		this.puck.initialize(this);
 		
 		// goal
@@ -120,7 +122,7 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void processTick() {
-		System.out.format("%s tick: %d\n", (isMaster())?"Calculate":"Simulate", state.getGameTick());
+		//System.out.format("%s tick: %d\n", (isMaster())?"Calculate":"Simulate", state.getGameTick());
 		
 		Vector2D nextPosition = state.getPuckPosition().plus(state.getVelocity());
 
@@ -139,11 +141,11 @@ public class WindowHockey implements IConnectionListener {
 		// collision west wall
 		if (nextPosition.x() < 0) {
 			switch (profile.getExitBinding()) {
-			case EAST:
+			case RIGHT:
 				// collision with goal wall -> bounce
 				newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), true);
 				break;
-			case WEST:
+			case LEFT:
 				// collision with exit wall -> transfer game master rights
 				System.out.println("Collision west, transfer!");
 				transferMaster();
@@ -154,11 +156,11 @@ public class WindowHockey implements IConnectionListener {
 		// collision east wall
 		if (nextPosition.x() > WindowHockeyUtils.getRelativeScreenWidth(puck)) {
 			switch (profile.getExitBinding()) {
-			case WEST:
+			case LEFT:
 				// collision with goal wall -> bounce
 				newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), true);
 				break;
-			case EAST:
+			case RIGHT:
 				// collision with exit wall -> transfer game master rights
 				System.out.println("Collision each, transfer!");
 				transferMaster();
@@ -166,7 +168,7 @@ public class WindowHockey implements IConnectionListener {
 			}
 		}
 		
-		state = GameState.update(state, nextPosition, newVelocity);
+		state = GameState.updateBall(state, nextPosition, newVelocity);
 	}
 	
 	private void render() {
@@ -194,8 +196,8 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void cleanUp() {
-		this.puck.setVisible(false);
-		this.goal.setVisible(false);
+		this.puck.close();
+		this.goal.close();
 		if (!this.conn.isClosed()) this.conn.close();
 		exec.shutdownNow();
 	}
@@ -207,6 +209,6 @@ public class WindowHockey implements IConnectionListener {
 	public void transferMaster() {
 		if (!isMaster()) return;
 		conn.sendMessage(new TransferFrame(state, this.opponent.id));
-		state = GameState.update(state, this.opponent.id);
+		state = GameState.updateMaster(state, this.opponent.id);
 	}
 }

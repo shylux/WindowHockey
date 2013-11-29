@@ -8,13 +8,30 @@ public class Vector2D implements Serializable, Cloneable {
 
 	private double x, y;
 	
+	/**
+	 * Zero Vector
+	 */
+	public Vector2D() {}
+	
 	public Vector2D(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
-	
+	 
 	public Vector2D(Point point) {
 		this(point.x, point.y);
+	}
+	
+	/**
+	 * Creates vector from angle and power.
+	 * @param angle angle in radians starting at 3 o'clock.
+	 * @param power length of the vector.
+	 */
+	public static Vector2D fromAngle(double angle, double power) {
+		Vector2D v = new Vector2D();
+		v.x = Math.cos(angle);
+		v.y = Math.sin(angle);
+		return v.times(power);
 	}
 
 	public double x() {
