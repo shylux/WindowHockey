@@ -13,7 +13,6 @@ public class TransferFrame implements Serializable {
 	UUID newMaster;
 
 	public TransferFrame(GameState state, UUID newMaster) {
-		System.out.println("##############################Tranfer!");
 		this.state = GameState.updateMaster(state, newMaster);
 		this.newMaster = newMaster;
 	}

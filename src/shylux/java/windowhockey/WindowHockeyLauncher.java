@@ -1,6 +1,7 @@
 package shylux.java.windowhockey;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 import shylux.java.network.ConnectionManager;
@@ -37,11 +38,10 @@ public class WindowHockeyLauncher implements INetworkListener {
 	
 	public WindowHockeyLauncher(HockeyProfile settings) {
 		this.settings = settings;
-		System.out.format("Welcome %s\n", this.settings.username);
 		
-		if (!this.settings.isServer()) {
-			connectToGame();
-		} else {
+//		if (!this.settings.isServer()) {
+//			connectToGame();
+//		} else {
 			// setup server
 			if (this.settings.onlyTCP) {
 				cmanager = new ConnectionManager(this.settings.portNumber, true, false);
@@ -54,13 +54,13 @@ public class WindowHockeyLauncher implements INetworkListener {
 			cmanager.addNetworkListener(this);
 			System.out.println("Waiting for connection...");
 			
-			System.out.println("Sending hi message...");
+			System.out.println("Sending udp connect message...");
 			try {
 				ConnectionManager.sendBroadcastUDPMessage(PROGRAM_NAME);
 			} catch (SocketException e) {
 				e.printStackTrace();
 			}
-		}
+//		}
 	}
 	
 	public void onConnection(TCPConnection pCon) {
@@ -74,13 +74,13 @@ public class WindowHockeyLauncher implements INetworkListener {
 		}
 	}
 	
-	private void connectToGame() {
+	private void connectToGame(String target) {
 		TCPConnection conn;
 		try {
 			if (this.settings.portNumber != null)
-				conn = ConnectionManager.connect(this.settings.targetHost, this.settings.portNumber);
+				conn = ConnectionManager.connect(target, this.settings.portNumber);
 			else 
-				conn = ConnectionManager.connect(this.settings.targetHost);
+				conn = ConnectionManager.connect(target);
 		} catch (IOException e) {
 			System.err.format("Unable to connect: %s\n", e.getMessage());
 			return;
@@ -97,7 +97,7 @@ public class WindowHockeyLauncher implements INetworkListener {
 		game = null;
 		
 		// check if server should continue
-		if (this.settings.isServer() && this.settings.persistentListening) {	
+		if (this.settings.persistentListening) {	
 			System.out.println("Waiting for connection...");
 		} else {
 			if (this.cmanager != null) this.cmanager.stop();
@@ -106,7 +106,7 @@ public class WindowHockeyLauncher implements INetworkListener {
 	}
 
 	public void onGameEnd(boolean didIWin) {
-		System.out.println((didIWin)?"He won.":"He lost.");
+		System.out.println((didIWin)?"YOU WIN":"Meh...");
 		onGameEnd();
 	}
 
@@ -114,9 +114,8 @@ public class WindowHockeyLauncher implements INetworkListener {
 		System.out.println("Msg:"+msg.getMessage());
 		if (msg.getMessage().equals(PROGRAM_NAME)) {
 			// change to client
-			this.settings.targetHost = null;
-			this.settings.targetHost = msg.getInetAddress().getHostAddress();
-			connectToGame();
+			this.settings.initiator = true;
+			connectToGame(msg.getInetAddress().getHostAddress());
 		}
 	}
 }

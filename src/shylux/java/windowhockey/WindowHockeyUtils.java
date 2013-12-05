@@ -62,7 +62,7 @@ public abstract class WindowHockeyUtils {
 	}
 	
 	public static Dimension calculatePuckSize(HockeyProfile profile, Puck puck) {
-		int puckSize = (int) (profile.puckDimensions * getAvailableScreenHeight(puck));
+		int puckSize = (int) (HockeyProfile.PUCK_DIMENSIONS * getAvailableScreenHeight(puck));
 		return new Dimension(puckSize, puckSize);
 	}
 	

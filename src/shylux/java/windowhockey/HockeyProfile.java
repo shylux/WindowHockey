@@ -3,9 +3,7 @@ package shylux.java.windowhockey;
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 
 /**
  * All settings for my hockey game. The values are parsed with JCommander.
@@ -24,26 +22,25 @@ public class HockeyProfile implements Serializable {
 
 	enum ExitBinding {LEFT, RIGHT}
 
-	public final double puckDimensions = 0.1;
+	// Frames per second
+	static final int FPS = 60;
+	//
 	
-	@Parameter(names = "-fps", description = "Frames per second cap.")
-	int fps = 60;
-	
+	// id to identify the game instance
+	UUID id;
+
 	public HockeyProfile() {
 		id = UUID.randomUUID();
 	}
 	
-	UUID id;
+	@Parameter(names = {"-i", "-invert"}, description = "Makes the cursur pull the puck instead of pushing it away.")
+	private boolean inverted = false;
 	
-	@Parameter(names = {"-e", "-exitside"}, description = "Define on which side the puck will exit your screen. (EAST, WEST)", required = true)
-	String exitBinding;
-	
-	
-	@Parameter(names = {"-u", "-username"}, description = "Username", required = true)
-	String username;
-	
-	@Parameter(names = {"-h", "-host"}, description = "Target host to connect.")
-	String targetHost;
+	@Parameter(names = {"-left"}, description = "Left Machine.")
+	private boolean left = false;
+	@Parameter(names = {"-right"}, description = "Right Machine.")
+	private boolean right = false;
+
 	@Parameter(names = {"-p", "-port"}, description = "Port to listen or if host defined port on target host.")
 	Integer portNumber = 8228;
 
@@ -56,36 +53,33 @@ public class HockeyProfile implements Serializable {
 	@Parameter(names = "-udp", description = "Only UDP server.")
 	transient boolean onlyUDP = false;
 	
+	// Size of puck relative to screen height
+	static final double PUCK_DIMENSIONS = 0.1;
 	double mouseInfluenceRadius = .3;
 	double mouseMaxInfluenceRate = .007;
 	double maxPuckSpeed = 0.03;
 	// x y
 	double[] goalSize = new double[] {.05, .2};
 	
+	boolean initiator = false;
+	public boolean isInitiator() {
+		return initiator;
+	}
 	
 	// the hidden in the annotation does hide it from help text. nothing to do with actual value.
 	@Parameter(names = "-hidden", hidden = true)
 	transient boolean hidden = false;
 	
-	public boolean isServer() {
-		return targetHost == null;
-	}
-	
 	public ExitBinding getExitBinding() {
-		for (ExitBinding binding: ExitBinding.values()) {
-			if (binding.name().equalsIgnoreCase(exitBinding)) return binding;
-		}
-		// meh
-		return ExitBinding.RIGHT;
-	}
-	
-	// TODO not working atm. i think i got an older version of jcommander
-	public class ExitBindingConverter implements IStringConverter<ExitBinding> {
-		public ExitBinding convert(String input) {
-			for (ExitBinding binding: ExitBinding.values()) {
-				if (binding.name().equalsIgnoreCase(input)) return binding;
-			}
-			throw new ParameterException(String.format("%s can't be converted to ExitBinding.", input));
-		}	
+//		Such beautiful code..
+//		for (ExitBinding binding: ExitBinding.values()) {
+//			if (binding.name().equalsIgnoreCase(exitBinding)) return binding;
+//		}
+		if (right)
+			return ExitBinding.LEFT;
+		else if (left)
+			return ExitBinding.RIGHT;
+		else
+			return null;
 	}
 }

@@ -33,24 +33,22 @@ public class WindowHockey implements IConnectionListener {
 		conn.addConnectionListener(this);
 		
 		// server initiates hand shake
-		if (this.profile.isServer()) {
+		if (this.profile.isInitiator()) {
 			conn.sendMessage(this.profile);
-			System.out.println("Sent server profile: "+this.profile.username);
+			System.out.println("Sent server profile: "+this.profile.id);
 		}
-		System.out.println("I am a server? "+profile.isServer());
 	}
 
 	public void onMessage(Object o) {
-		//System.out.println("got object "+o.getClass().toString());
 		// Initial hand shake
 		if (o instanceof HockeyProfile) {
 			// hand shake
 			this.opponent = (HockeyProfile) o;
-			System.out.println("Got profile: "+this.opponent.username);
+			System.out.println("Got profile: "+this.opponent.id);
 			// if client answer with own profile
-			if (!this.profile.isServer()) {
+			if (!this.profile.isInitiator()) {
 				this.conn.sendMessage(this.profile);
-				System.out.println("Sent client profile: "+this.profile.username);
+				System.out.println("Sent client profile: "+this.profile.id);
 			}
 			else
 				// handshake done. lets start the game
@@ -71,7 +69,6 @@ public class WindowHockey implements IConnectionListener {
 			if (this.state == null) initiateGame(false);
 			if (isMaster()) return; // no one can command me!
 			GameState gamestate = (GameState) o;
-			//System.out.println("Got state: "+gamestate.getGameTick()+gamestate.getPuckPosition());
 			state = gamestate;
 			render();
 		}
@@ -118,7 +115,7 @@ public class WindowHockey implements IConnectionListener {
 					conn.sendMessage(state);
 				}
 				render();
-			}}, 50, 1000 / profile.fps, TimeUnit.MILLISECONDS);
+			}}, 50, 1000 / HockeyProfile.FPS, TimeUnit.MILLISECONDS);
 	}
 	
 	private void processTick() {
@@ -135,7 +132,7 @@ public class WindowHockey implements IConnectionListener {
 		}
 		
 		// vertical collision
-		if (nextPosition.y() < 0 || nextPosition.y()+profile.puckDimensions > 1) newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), false);
+		if (nextPosition.y() < 0 || nextPosition.y()+HockeyProfile.PUCK_DIMENSIONS > 1) newVelocity = WindowHockeyUtils.mirrorVector(state.getVelocity(), false);
 		
 		
 		// collision west wall
@@ -147,7 +144,6 @@ public class WindowHockey implements IConnectionListener {
 				break;
 			case LEFT:
 				// collision with exit wall -> transfer game master rights
-				System.out.println("Collision west, transfer!");
 				transferMaster();
 				return;
 			}
@@ -162,7 +158,6 @@ public class WindowHockey implements IConnectionListener {
 				break;
 			case RIGHT:
 				// collision with exit wall -> transfer game master rights
-				System.out.println("Collision each, transfer!");
 				transferMaster();
 				return;
 			}
@@ -184,7 +179,6 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void endGame(boolean didIWin) {
-		System.out.println((didIWin)?"Horrray im a winner":"Meh...");
 		cleanUp();
 		this.launcher.onGameEnd(didIWin);
 	}
@@ -196,8 +190,8 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void cleanUp() {
-		this.puck.close();
-		this.goal.close();
+		if (this.puck != null) this.puck.close();
+		if (this.goal != null) this.goal.close();
 		if (!this.conn.isClosed()) this.conn.close();
 		exec.shutdownNow();
 	}

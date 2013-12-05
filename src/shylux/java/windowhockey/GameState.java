@@ -75,7 +75,7 @@ public class GameState implements Serializable, Cloneable {
 			newVelocity = (state.getVelocity().x() > 0) ? state.getVelocity() : new Vector2D(-state.getVelocity().x(), state.getVelocity().y());
 			break;
 		case RIGHT:
-			newPosition = new Vector2D(WindowHockeyUtils.getRelativeScreenWidth(parent.puck)-parent.profile.puckDimensions, state.getPuckPosition().y());
+			newPosition = new Vector2D(WindowHockeyUtils.getRelativeScreenWidth(parent.puck)-HockeyProfile.PUCK_DIMENSIONS, state.getPuckPosition().y());
 			newVelocity = (state.getVelocity().x() < 0) ? state.getVelocity() : new Vector2D(-state.getVelocity().x(), state.getVelocity().y());
 			break;
 		}
@@ -100,5 +100,9 @@ public class GameState implements Serializable, Cloneable {
 	
 	public List<PowerUp> getPowerUps() {
 		return powerups;
+	}
+	
+	public boolean hasPowerUp(PowerUp p) {
+		return powerups.contains(p);
 	}
 }
