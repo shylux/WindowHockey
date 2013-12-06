@@ -55,6 +55,8 @@ public class WindowHockeyLauncher implements INetworkListener {
 		PlainHandler handler = new PlainHandler();
 		handler.setLevel(settings.getLogLevel());
 		WindowHockeyLauncher.LOG.addHandler(handler);
+		// set ConnectionManager log level
+		ConnectionManager.LOG.setLevel(settings.getLogLevel());
 		// launch!
 		new WindowHockeyLauncher(settings);
 	}
