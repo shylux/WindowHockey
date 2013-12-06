@@ -12,6 +12,8 @@ import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 
+import shylux.java.windowhockey.HockeyProfile.ExitBinding;
+
 
 public abstract class WindowHockeyUtils {
 	
@@ -92,13 +94,27 @@ public abstract class WindowHockeyUtils {
 		Vector2D mouseDiff = puck.getAbsoluteCenterPoint().minus(new Vector2D(mousePosition));
 		// convert to relative value
 		mouseDiff = mouseDiff.times(1./getAvailableScreenHeight(puck));
-		if (mouseDiff.norm() < profile.mouseInfluenceRadius) { // Box in influence radius of mouse?
+		if (mouseDiff.norm() < profile.getMouseInfluenceRadius()) { // Box in influence radius of mouse?
 			// black coding magic
-			double influenceRate = (profile.mouseInfluenceRadius - mouseDiff.norm()) / profile.mouseInfluenceRadius; // bigger if closer. max at 1
-			influenceRate *= profile.mouseMaxInfluenceRate;
+			double influenceRate = (profile.getMouseInfluenceRadius() - mouseDiff.norm()) / profile.getMouseInfluenceRadius(); // bigger if closer. max at 1
+			influenceRate *= state.getMaxInfluenceRate();
 			Vector2D influence = mouseDiff.unit().times(influenceRate);
-			newVelocity = newVelocity.plus(influence).cap(profile.maxPuckSpeed);
+			newVelocity = newVelocity.plus(influence).cap(state.getMaxPuckSpeed());
 		}
 		return newVelocity;
+	}
+	
+	/**
+	 * Generates the initial movement of the puck. The angle is random and points away of your goal to avoid an immideate defeat.
+	 * @param profile to determine right or left machine
+	 * @return generated initial movement of puck
+	 */
+	public static Vector2D generateInitialMovement(HockeyProfile profile) {
+		double randAngle = Math.random()*Math.PI; // angle between 0 and 180 degree (PI rad)
+		// the initial movement should be away of your goal
+		if (profile.getExitBinding() == ExitBinding.RIGHT) {
+			randAngle += Math.PI;
+		}
+		return Vector2D.fromAngle(randAngle, .005);
 	}
 }

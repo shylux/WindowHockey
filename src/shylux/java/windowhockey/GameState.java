@@ -22,23 +22,32 @@ public class GameState implements Serializable, Cloneable {
 	// velocity goes relative to puck size ant thus relative to screen height
 	private Vector2D velocity;
 	
+	private double maxPuckSpeed = 0.03;
+	private double mouseMaxInfluenceRate = .007;
+	
 	List<PowerUp> powerups;
 
-	private GameState(long tick, UUID master, Vector2D position, Vector2D velocity, List<PowerUp> powerups) {
+	private GameState(long tick, UUID master, Vector2D position, Vector2D velocity, double maxSpeed, double maxInfluence) {
 		this.gameTick = tick;
 		this.currentMaster = master;
 		this.puckPosition = position;
 		this.velocity = velocity;
-		this.powerups = powerups;
+		this.maxPuckSpeed = maxSpeed;
+		this.mouseMaxInfluenceRate = maxInfluence;
 	}
 	
 	// copy constructor
 	private GameState(GameState state) {
-		this(state.getGameTick()+1, state.getCurrentMaster(), state.getPuckPosition(), state.getVelocity(), state.getPowerUps());
+		this(state.getGameTick()+1,
+			 state.getCurrentMaster(),
+			 state.getPuckPosition(),
+			 state.getVelocity(),
+			 state.getMaxPuckSpeed(),
+			 state.getMaxInfluenceRate());
 	}
 	
-	public static GameState setup(UUID master, Vector2D position, Vector2D velocity) {
-		return new GameState(0, master, position, velocity, new ArrayList<PowerUp>());
+	public static GameState setup(UUID master, Vector2D position, double maxSpeed, double maxInfluence, Vector2D velocity) {
+		return new GameState(0, master, position, velocity, maxSpeed, maxInfluence);
 	}
 	
 	/* UPDATES */
@@ -66,6 +75,13 @@ public class GameState implements Serializable, Cloneable {
 		return newState;
 	}
 	
+	/**
+	 * Aligns the puck with the entry wall and adjusts velocity so no collision and immediate transfer back occurs. 
+	 * @param state
+	 * @param direction
+	 * @param parent
+	 * @return updated gamestate
+	 */
 	public static GameState processEntryPoint(GameState state, ExitBinding direction, WindowHockey parent) {
 		Vector2D newPosition = null;
 		Vector2D newVelocity = null;
@@ -104,5 +120,13 @@ public class GameState implements Serializable, Cloneable {
 	
 	public boolean hasPowerUp(PowerUp p) {
 		return powerups.contains(p);
+	}
+
+	public double getMaxPuckSpeed() {
+		return maxPuckSpeed;
+	}
+
+	public double getMaxInfluenceRate() {
+		return mouseMaxInfluenceRate;
 	}
 }

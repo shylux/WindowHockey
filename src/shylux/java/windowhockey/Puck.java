@@ -17,8 +17,6 @@ public class Puck extends TransparentWindow {
 	}
 	
 	public void initialize(WindowHockey game) {
-		// cancel if no output is preferred
-		if (game.profile.hidden) return;
 		setSize(WindowHockeyUtils.calculatePuckSize(game.profile, this));
 		setVisible(true);
 		requestFocus();

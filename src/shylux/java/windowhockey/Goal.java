@@ -1,11 +1,9 @@
 package shylux.java.windowhockey;
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Image;
 import java.awt.Insets;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Goal extends TransparentWindow {
@@ -18,15 +16,12 @@ public class Goal extends TransparentWindow {
 		pane.setBackground(Color.BLACK);
 		setContentPane(pane);
 		
-		// cancel if no output is preferred
-		if (profile.hidden) return;
-		
 		setVisible(true);
 		
 		// calc size
 		int screen_height = WindowHockeyUtils.getAvailableScreenHeight(this);
-		int width = (int)(profile.goalSize[0]*screen_height);
-		int height = (int)(profile.goalSize[1]*screen_height);
+		int width = (int)(HockeyProfile.GOAL_SIZE[0]*screen_height);
+		int height = (int)(HockeyProfile.GOAL_SIZE[1]*screen_height);
 		setSize(width, height);
 		
 		// calc position

@@ -1,8 +1,9 @@
 package shylux.java.windowhockey;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import shylux.java.network.ConnectionManager;
 import shylux.java.network.INetworkListener;
@@ -17,11 +18,17 @@ public class WindowHockeyLauncher implements INetworkListener {
 	public static final String PROGRAM_NAME = "WindowHockey";
 	public static final int PORT = 8228;
 	
+	public static Logger LOG = Logger.getLogger(WindowHockeyLauncher.class.getName());
+	static {
+		LOG.setLevel(Level.ALL);
+	}
+	
 	WindowHockey game;
 	HockeyProfile settings;
 	ConnectionManager cmanager;
 
 	public static void main(String[] args) {
+		// parse command line
 		HockeyProfile settings = new HockeyProfile();
 		JCommander jc = new JCommander(settings);
 		jc.setProgramName(PROGRAM_NAME);
@@ -33,34 +40,46 @@ public class WindowHockeyLauncher implements INetworkListener {
 			jc.usage();
 			return;
 		}
+		// check command line arguments
+		try {
+			settings.getExitBinding();
+		} catch (Exception ex) {
+			// wrong usage; abort
+			System.err.println(ex.getMessage());
+			jc.usage();
+			return;
+		}
+		// disable default console handler
+		LOG.setUseParentHandlers(false);
+		// add my own log handler
+		PlainHandler handler = new PlainHandler();
+		handler.setLevel(settings.getLogLevel());
+		WindowHockeyLauncher.LOG.addHandler(handler);
+		// launch!
 		new WindowHockeyLauncher(settings);
 	}
 	
 	public WindowHockeyLauncher(HockeyProfile settings) {
 		this.settings = settings;
 		
-//		if (!this.settings.isServer()) {
-//			connectToGame();
-//		} else {
-			// setup server
-			if (this.settings.onlyTCP) {
-				cmanager = new ConnectionManager(this.settings.portNumber, true, false);
-			} else if (this.settings.onlyUDP) {
-				cmanager = new ConnectionManager(this.settings.portNumber, false, true);
-			} else {
-				cmanager = new ConnectionManager(this.settings.portNumber, true, true);
-			}
-			
-			cmanager.addNetworkListener(this);
-			System.out.println("Waiting for connection...");
-			
-			System.out.println("Sending udp connect message...");
-			try {
-				ConnectionManager.sendBroadcastUDPMessage(PROGRAM_NAME);
-			} catch (SocketException e) {
-				e.printStackTrace();
-			}
-//		}
+		// setup server
+		if (this.settings.onlyTCP) {
+			cmanager = new ConnectionManager(this.settings.portNumber, true, false);
+		} else if (this.settings.onlyUDP) {
+			cmanager = new ConnectionManager(this.settings.portNumber, false, true);
+		} else {
+			cmanager = new ConnectionManager(this.settings.portNumber, true, true);
+		}
+		
+		cmanager.addNetworkListener(this);
+		LOG.info("Waiting for connection...");
+		
+		LOG.info("Sending udp connect message...");
+		try {
+			ConnectionManager.sendBroadcastUDPMessage(PROGRAM_NAME);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void onConnection(TCPConnection pCon) {
@@ -82,14 +101,14 @@ public class WindowHockeyLauncher implements INetworkListener {
 			else 
 				conn = ConnectionManager.connect(target);
 		} catch (IOException e) {
-			System.err.format("Unable to connect: %s\n", e.getMessage());
+			LOG.severe("Unable to connect: "+e.getMessage());
 			return;
 		}
 		startGame(conn);
 	}
 	
 	private void startGame(TCPConnection conn) {
-		System.out.println("Starting game.");
+		LOG.fine("Starting game.");
 		game = new WindowHockey(this, conn, this.settings);
 	}
 	
@@ -98,7 +117,7 @@ public class WindowHockeyLauncher implements INetworkListener {
 		
 		// check if server should continue
 		if (this.settings.persistentListening) {	
-			System.out.println("Waiting for connection...");
+			LOG.info("Waiting for connection...");
 		} else {
 			if (this.cmanager != null) this.cmanager.stop();
 			System.exit(0);
@@ -106,15 +125,15 @@ public class WindowHockeyLauncher implements INetworkListener {
 	}
 
 	public void onGameEnd(boolean didIWin) {
-		System.out.println((didIWin)?"YOU WIN":"Meh...");
+		LOG.info((didIWin)?"YOU WIN":"Meh...");
 		onGameEnd();
 	}
 
 	public void onUDPMessage(UDPMessage msg) {
-		System.out.println("Msg:"+msg.getMessage());
+		LOG.finer("Msg:"+msg.getMessage());
 		if (msg.getMessage().equals(PROGRAM_NAME)) {
 			// change to client
-			this.settings.initiator = true;
+			this.settings.setInitiator(true);
 			connectToGame(msg.getInetAddress().getHostAddress());
 		}
 	}
