@@ -140,4 +140,8 @@ public class HockeyProfile implements Serializable {
 	public double getMaxPuckSpeed() {
 		return maxPuckSpeed * getGameSpeed().modifier();
 	}
+	
+	public boolean isInverted() {
+		return inverted;
+	}
 }

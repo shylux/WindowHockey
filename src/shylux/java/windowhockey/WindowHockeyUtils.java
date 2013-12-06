@@ -99,6 +99,7 @@ public abstract class WindowHockeyUtils {
 			double influenceRate = (profile.getMouseInfluenceRadius() - mouseDiff.norm()) / profile.getMouseInfluenceRadius(); // bigger if closer. max at 1
 			influenceRate *= state.getMaxInfluenceRate();
 			Vector2D influence = mouseDiff.unit().times(influenceRate);
+			if (state.isInverted()) influence = influence.invert();
 			newVelocity = newVelocity.plus(influence).cap(state.getMaxPuckSpeed());
 		}
 		return newVelocity;

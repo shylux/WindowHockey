@@ -76,6 +76,10 @@ public class Vector2D implements Serializable, Cloneable {
 		return this;
 	}
 	
+	public Vector2D invert() {
+		return this.times(-1);
+	}
+	
 	public String toString() {
 		return String.format("x=%f y=%f", this.x(), this.y());
 	}

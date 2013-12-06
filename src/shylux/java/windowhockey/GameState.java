@@ -24,16 +24,18 @@ public class GameState implements Serializable, Cloneable {
 	
 	private double maxPuckSpeed = 0.03;
 	private double mouseMaxInfluenceRate = .007;
+	private boolean inverted = false;
 	
 	List<PowerUp> powerups;
 
-	private GameState(long tick, UUID master, Vector2D position, Vector2D velocity, double maxSpeed, double maxInfluence) {
+	private GameState(long tick, UUID master, Vector2D position, Vector2D velocity, double maxSpeed, double maxInfluence, boolean inverted) {
 		this.gameTick = tick;
 		this.currentMaster = master;
 		this.puckPosition = position;
 		this.velocity = velocity;
 		this.maxPuckSpeed = maxSpeed;
 		this.mouseMaxInfluenceRate = maxInfluence;
+		this.inverted = inverted;
 	}
 	
 	// copy constructor
@@ -43,11 +45,12 @@ public class GameState implements Serializable, Cloneable {
 			 state.getPuckPosition(),
 			 state.getVelocity(),
 			 state.getMaxPuckSpeed(),
-			 state.getMaxInfluenceRate());
+			 state.getMaxInfluenceRate(),
+			 state.isInverted());
 	}
 	
-	public static GameState setup(UUID master, Vector2D position, double maxSpeed, double maxInfluence, Vector2D velocity) {
-		return new GameState(0, master, position, velocity, maxSpeed, maxInfluence);
+	public static GameState setup(UUID master, Vector2D position, double maxSpeed, double maxInfluence, Vector2D velocity, boolean inverted) {
+		return new GameState(0, master, position, velocity, maxSpeed, maxInfluence, inverted);
 	}
 	
 	/* UPDATES */
@@ -128,5 +131,9 @@ public class GameState implements Serializable, Cloneable {
 
 	public double getMaxInfluenceRate() {
 		return mouseMaxInfluenceRate;
+	}
+	
+	public boolean isInverted() {
+		return inverted;
 	}
 }

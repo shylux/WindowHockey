@@ -94,7 +94,8 @@ public class WindowHockey implements IConnectionListener {
 				new Vector2D(.5,.5),
 				profile.getMaxPuckSpeed(),
 				profile.getMaxInfluenceRate(),
-				WindowHockeyUtils.generateInitialMovement(profile));
+				WindowHockeyUtils.generateInitialMovement(profile),
+				profile.isInverted());
 		this.puck.initialize(this);
 		
 		// goal
