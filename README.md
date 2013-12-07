@@ -19,8 +19,10 @@ Troubleshooting
 Ping the other machine! **Make sure both machines are in the same network.**
 
 #### There is an error with **JVM_Bind**...
-The default port ```8228``` is already in use.
+WindowHockey uses port ```8228``` by default. This error message means that there is already something running on this port
+
 1. Did you start WindowHockey a second time? Check the TaskManager for a java process.
+
 2. Another program may use the same port. You can switch port with ```-port 1234```. **But the other machine has to use the same port!**
 
 Command line arguments
@@ -39,5 +41,5 @@ Game settings like ```-slow``` or ```-fast``` are defined by the machine who sta
 | Command | Description |
 | --- | --- |
 |```-log```| Log level. Levels are ALL, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL. Default: INFO |
-|```-tcp -udp```| Start instance with only tcp or udp. Used when debugging on one machine. First start the ```-udp``` instance, then the ```-tcp``` one. The ```-udp``` instance defines the game settings. |
+|```-tcp``` ```-udp```| Start instance with only tcp or udp. Used when debugging on one machine. First start the ```-udp``` instance, then the ```-tcp``` one. The ```-udp``` instance defines the game settings. |
 |```-stop```| Stops puck on cursor contact. |
