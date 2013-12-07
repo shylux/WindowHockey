@@ -88,8 +88,7 @@ public abstract class WindowHockeyUtils {
 			return new Vector2D(v.x(), -v.y());
 	}
 	
-	public static Vector2D applyMouseForce(HockeyProfile profile, Puck puck, GameState state) {
-		Vector2D newVelocity = state.getVelocity();
+	public static Vector2D applyMouseForce(Vector2D newVelocity, HockeyProfile profile, Puck puck, GameState state) {
 		Point mousePosition = MouseInfo.getPointerInfo().getLocation();
 		Vector2D mouseDiff = puck.getAbsoluteCenterPoint().minus(new Vector2D(mousePosition));
 		// convert to relative value
@@ -117,5 +116,12 @@ public abstract class WindowHockeyUtils {
 			randAngle += Math.PI;
 		}
 		return Vector2D.fromAngle(randAngle, .005);
+	}
+
+	public static Vector2D applyFriction(Vector2D newVelocity, GameState state) {
+		int fps = HockeyProfile.FPS;
+		double friction = state.getMaxPuckSpeed() / (fps*5);
+		Vector2D vFriction = newVelocity.unit().times(friction);
+		return newVelocity.minus(vFriction);
 	}
 }

@@ -10,7 +10,7 @@ public class Puck extends TransparentWindow {
 
 	public Puck() {
 		try {
-			this.background = ImageIO.read(getClass().getResource("/shylux/java/windowhockey/resources/puck.png"));
+			this.background = ImageIO.read(getClass().getResource("/shylux/java/windowhockey/resources/puck_surface.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

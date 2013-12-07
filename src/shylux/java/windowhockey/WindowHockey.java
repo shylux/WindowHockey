@@ -129,13 +129,14 @@ public class WindowHockey implements IConnectionListener {
 		
 		Vector2D nextPosition = state.getPuckPosition().plus(state.getVelocity());
 
-		Vector2D newVelocity = WindowHockeyUtils.applyMouseForce(profile, puck, state);
+		Vector2D newVelocity = WindowHockeyUtils.applyMouseForce(state.getVelocity(), profile, puck, state);
 		
 		if (puck.intersects(goal)) {
 			// i lost.
 			conn.sendMessage(new GameEndFrame(this.opponent.getId()));
 			endGame(false);
 		}
+		
 		
 		// vertical collision
 		if ( (nextPosition.y() < 0 && state.getVelocity().y() < 0) ||
