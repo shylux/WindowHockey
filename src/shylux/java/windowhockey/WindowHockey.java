@@ -25,6 +25,7 @@ public class WindowHockey implements IConnectionListener {
 
 	Puck puck;
 	Goal goal;
+	CursorOverlay coverlay;
 	
 	public WindowHockey(WindowHockeyLauncher launcher, TCPConnection conn, HockeyProfile profile) {
 		this.launcher = launcher;
@@ -78,6 +79,7 @@ public class WindowHockey implements IConnectionListener {
 			state = GameState.processEntryPoint(state, profile.getExitBinding(), this);
 			processTick();
 			puck.setVisible(true);
+			coverlay.setVisible(true);
 			render();
 		}
 		if (o instanceof GameEndFrame) {
@@ -97,6 +99,9 @@ public class WindowHockey implements IConnectionListener {
 				WindowHockeyUtils.generateInitialMovement(profile),
 				profile.isInverted());
 		this.puck.initialize(this);
+		
+		if (!profile.onlyUDP)
+			this.coverlay = new CursorOverlay((int) WindowHockeyUtils.getCursorSize(this.puck, this.profile));
 		
 		// goal
 		this.goal = new Goal(profile);
@@ -201,6 +206,7 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void cleanUp() {
+		if (this.coverlay != null) this.coverlay.close();
 		if (this.puck != null) this.puck.close();
 		if (this.goal != null) this.goal.close();
 		if (!this.conn.isClosed()) this.conn.close();
@@ -213,6 +219,7 @@ public class WindowHockey implements IConnectionListener {
 	
 	public void transferMaster() {
 		if (!isMaster()) return;
+		this.puck.setVisible(false);
 		conn.sendMessage(new TransferFrame(state, this.opponent.getId()));
 		state = GameState.updateMaster(state, this.opponent.getId());
 	}

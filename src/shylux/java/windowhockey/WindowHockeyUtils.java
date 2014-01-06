@@ -124,4 +124,8 @@ public abstract class WindowHockeyUtils {
 		Vector2D vFriction = newVelocity.unit().times(friction);
 		return newVelocity.minus(vFriction);
 	}
+	
+	public static double getCursorSize(JFrame frame, HockeyProfile profile) {
+		return getAvailableScreenHeight(frame) * profile.getMouseInfluenceRadius() * 2;
+	}
 }

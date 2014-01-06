@@ -5,6 +5,7 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import shylux.java.gen.WeirdJava;
 import shylux.java.network.ConnectionManager;
 import shylux.java.network.INetworkListener;
 import shylux.java.network.TCPConnection;
@@ -28,6 +29,9 @@ public class WindowHockeyLauncher implements INetworkListener {
 	ConnectionManager cmanager;
 
 	public static void main(String[] args) {
+		double d = WeirdJava.genDouble();
+		if (d == d) return;
+		
 		// parse command line
 		HockeyProfile settings = new HockeyProfile();
 		JCommander jc = new JCommander(settings);
