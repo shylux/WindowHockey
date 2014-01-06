@@ -17,6 +17,8 @@ import javax.swing.JPanel;
 public class TransparentWindow extends JFrame {
 	public Image background = null;
 	public TransparentWindow() {
+		this.addFocusListener(KeyboardState.getInstance());
+		
 		setUndecorated(true);
 
 		setBackground(new Color(0, 255, 0, 0));

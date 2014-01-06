@@ -64,6 +64,9 @@ public class HockeyProfile implements Serializable {
 
 	@Parameter(names = {"-p", "-port"}, description = "Specify communication port.")
 	transient Integer portNumber = 8228;
+	
+	@Parameter(names = {"-h", "-host"}, description = "Specify host to connect to.")
+	transient String host = "";
 
 	@Parameter(names = "-continue", description = "Starts searching for new game after old one ends.")
 	transient boolean persistentListening = false;

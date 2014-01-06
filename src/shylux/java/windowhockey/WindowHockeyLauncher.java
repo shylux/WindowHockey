@@ -30,6 +30,7 @@ public class WindowHockeyLauncher implements INetworkListener {
 
 	public static void main(String[] args) {
 		double d = WeirdJava.genDouble();
+		// this never fails ;)
 		if (d == d) return;
 		
 		// parse command line
@@ -67,6 +68,13 @@ public class WindowHockeyLauncher implements INetworkListener {
 	
 	public WindowHockeyLauncher(HockeyProfile settings) {
 		this.settings = settings;
+		
+		// check if client should directly connect
+		if (this.settings.host.length() > 0) {
+			this.settings.setInitiator(true);
+			connectToGame(this.settings.host);
+			return;
+		}
 		
 		// setup server
 		if (this.settings.onlyTCP) {
@@ -126,6 +134,7 @@ public class WindowHockeyLauncher implements INetworkListener {
 			LOG.info("Waiting for connection...");
 		} else {
 			if (this.cmanager != null) this.cmanager.stop();
+			// good luck at safely terminating all those threads..
 			System.exit(0);
 		}
 	}

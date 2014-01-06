@@ -9,11 +9,20 @@ import javax.swing.JPanel;
 public class Goal extends TransparentWindow {
 	Image background;
 	
+	Color backgroundColor = Color.BLACK;
+	
 	public Goal(HockeyProfile profile) {
 		super();
 		
+		// apply debug colors
+		if (profile.onlyUDP) {
+			backgroundColor = Color.GREEN;
+		} else if (profile.onlyTCP) {
+			backgroundColor = Color.CYAN;
+		}
+		
 		JPanel pane = new JPanel();
-		pane.setBackground(Color.BLACK);
+		pane.setBackground(backgroundColor);
 		setContentPane(pane);
 		
 		setVisible(true);

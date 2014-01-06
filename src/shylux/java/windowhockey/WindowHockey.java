@@ -1,5 +1,10 @@
 package shylux.java.windowhockey;
 
+import java.awt.AWTException;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -100,8 +105,7 @@ public class WindowHockey implements IConnectionListener {
 				profile.isInverted());
 		this.puck.initialize(this);
 		
-		if (!profile.onlyUDP)
-			this.coverlay = new CursorOverlay((int) WindowHockeyUtils.getCursorSize(this.puck, this.profile));
+		this.coverlay = new CursorOverlay((int) WindowHockeyUtils.getCursorSize(this.puck, this.profile));
 		
 		// goal
 		this.goal = new Goal(profile);
@@ -115,6 +119,7 @@ public class WindowHockey implements IConnectionListener {
 			}
 		}, 50, 500, TimeUnit.MILLISECONDS);
 
+		// send game states
 		exec.scheduleWithFixedDelay(new Runnable() {
 			public void run() {
 				if (conn.isClosed()) return;
@@ -127,6 +132,27 @@ public class WindowHockey implements IConnectionListener {
 				}
 				render();
 			}}, 50, 1000 / HockeyProfile.FPS, TimeUnit.MILLISECONDS);
+		
+		// start cursor movement
+		exec.scheduleAtFixedRate(new Runnable() {
+			double currentMouseAngle = 0;
+			public void run() {
+				if (!isActiveScreen()) return;
+				if (KeyboardState.getInstance().isKeyPressed(KeyEvent.VK_CONTROL)) return;
+				double mouseSpeed = 10;
+				double rotationSpeed = 6;
+				currentMouseAngle += rotationSpeed;
+				Vector2D mouseDiff = Vector2D.fromAngle(Math.toRadians(currentMouseAngle), mouseSpeed);
+				Point cursorPosition = MouseInfo.getPointerInfo().getLocation();
+				Vector2D cursorMove = new Vector2D(cursorPosition).minus(mouseDiff);
+				try {
+					Robot r = new Robot();
+					r.mouseMove((int)Math.round(cursorMove.x()), (int)Math.round(cursorMove.y()));
+				} catch (AWTException e) {
+					e.printStackTrace();
+				}
+			}
+		}, 10, 17, TimeUnit.MILLISECONDS);
 	}
 	
 	private void processTick() {
@@ -183,6 +209,10 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void render() {
+		// check if overlay should be hidden in debug mode
+		this.coverlay.setVisible(isActiveScreen());
+		
+		// puck update
 		if (isMaster()) {
 			puck.setVisible(true);
 			WindowHockeyUtils.applyPuckLocation(state, puck);
@@ -222,5 +252,14 @@ public class WindowHockey implements IConnectionListener {
 		this.puck.setVisible(false);
 		conn.sendMessage(new TransferFrame(state, this.opponent.getId()));
 		state = GameState.updateMaster(state, this.opponent.getId());
+	}
+	
+	/**
+	 * Screen in normally active and only disabled if debug mode is active and
+	 * the ball is currently on the other screen.
+	 * @return
+	 */
+	public boolean isActiveScreen() {
+		return !((profile.onlyTCP || profile.onlyUDP) && !isMaster());
 	}
 }
