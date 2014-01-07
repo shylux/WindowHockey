@@ -7,9 +7,11 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class TransparentWindow extends JFrame {
 	public Image background;
 	public TransparentWindow() {

@@ -17,12 +17,12 @@ public class WestCoastScheduledExecutor extends ScheduledThreadPoolExecutor {
         }
 
         @Override
-        public ScheduledFuture scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+        public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
                 return super.scheduleAtFixedRate(wrapRunnable(command), initialDelay, period, unit);
         }
 
         @Override
-        public ScheduledFuture scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+        public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
                 return super.scheduleWithFixedDelay(wrapRunnable(command), initialDelay, delay, unit);
         }
 

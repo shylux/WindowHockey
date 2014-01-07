@@ -3,6 +3,7 @@ package shylux.java.windowhockey.network;
 import java.io.Serializable;
 import java.util.UUID;
 
+@SuppressWarnings("serial")
 public class GameEndFrame implements Serializable {
 	UUID winner;
 	

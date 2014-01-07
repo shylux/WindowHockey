@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+@SuppressWarnings("serial")
 public class Puck extends TransparentWindow {
 	private boolean unstoppable = false;
 

@@ -30,7 +30,6 @@ public class WindowHockey implements IConnectionListener {
 
 	Puck puck;
 	Goal goal;
-	CursorOverlay coverlay;
 	
 	public WindowHockey(WindowHockeyLauncher launcher, TCPConnection conn, HockeyProfile profile) {
 		this.launcher = launcher;
@@ -103,8 +102,7 @@ public class WindowHockey implements IConnectionListener {
 				profile.isInverted());
 		this.puck.initialize(this);
 		
-		this.coverlay = new CursorOverlay((int) WindowHockeyUtils.getCursorSize(this.puck, this.profile));
-		
+	
 		// goal
 		this.goal = new Goal(profile);
 		
@@ -207,9 +205,6 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void render() {
-		// check if overlay should be hidden in debug mode
-		this.coverlay.setVisible(isActiveScreen());
-		
 		// puck update
 		if (isMaster()) {
 			puck.setVisible(true);
@@ -234,7 +229,6 @@ public class WindowHockey implements IConnectionListener {
 	}
 	
 	private void cleanUp() {
-		if (this.coverlay != null) this.coverlay.close();
 		if (this.puck != null) this.puck.close();
 		if (this.goal != null) this.goal.close();
 		if (!this.conn.isClosed()) this.conn.close();
