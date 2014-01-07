@@ -14,10 +14,25 @@ import javax.swing.JFrame;
 
 import shylux.java.windowhockey.HockeyProfile.ExitBinding;
 
-
+/**
+ * WindowHockey Utilities.
+ * All code heavy, but not logic relevant calculations.
+ * @author lukas
+ *
+ */
 public abstract class WindowHockeyUtils {
 	
 	private static Insets screen_bounds;
+	
+	/**
+	 * Gets available screen bounds of current screen (identified by parameter frame).
+	 * Available means the screen without Taskbar and similar panels.
+	 * So if you use a mac and have the small panel on the top only you would get
+	 * [~50 (size of panel), XX, XX, XX] XX = screen sizes
+	 * @param frame Used to determine current screen.
+	 * @return Available screen bounds.
+	 * @throws IllegalStateException Happens when frame is not on the screen.
+	 */
 	public static Insets getAvailableScreenBounds(JFrame frame) throws IllegalStateException {
 		// calculate them once! also prevents null pointer when puck is outside of screen.
 		if (screen_bounds != null) return screen_bounds; 
@@ -40,24 +55,45 @@ public abstract class WindowHockeyUtils {
 		return screen_bounds;
 	}
 	
+	/**
+	 * Returns the width of the screen, assuming the height of the screen is 1.
+	 * @param frame Used to determine the current screen.
+	 * @return Relative screen width if screen height is 1.
+	 */
 	public static double getRelativeScreenWidth(JFrame frame) {
 		return (double)getAvailableScreenWidth(frame) / getAvailableScreenHeight(frame);
 	}
 	
+	/**
+	 * Returns screen height in pixel after deducting Taskbar etc.
+	 * @param frame Used to determine the current screen.
+	 * @return Available screen height in pixel.
+	 */
 	public static int getAvailableScreenHeight(JFrame frame) {
 		Insets screen = getAvailableScreenBounds(frame);
 		return screen.bottom - screen.top;
 	}
 	
+	/**
+	 * Returns screen width in pixel after deducting Taskbar etc.
+	 * @param frame Used to determine the current screen.
+	 * @return Available screen width 
+	 */
 	public static int getAvailableScreenWidth(JFrame frame) {
 		Insets screen = getAvailableScreenBounds(frame);
 		return screen.right - screen.left;
 	}
 
+	/**
+	 * Deduct the given insets from the given rectangle.
+	 * @param rect Rectangle to deduct the insets from.
+	 * @param ins Insets to deduct from the rectangle.
+	 * @return The insets remaining from the rectangle.
+	 */
 	public static Insets applyInsets(Rectangle rect, Insets ins) {
 		return new Insets(rect.y+ins.top, rect.x+ins.left, rect.y+rect.height-ins.bottom, rect.x+rect.width-ins.right);
 	}
-	
+
 	public static Point calculateScreenCenter(Puck puck) {
 		Insets screen = getAvailableScreenBounds(puck);
 		return new Point((screen.right - screen.left) / 2 + screen.left, (screen.bottom - screen.top) / 2 + screen.top);

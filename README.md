@@ -18,6 +18,8 @@ Troubleshooting
 #### The game doesn't start!
 Ping the other machine! **Make sure both machines are in the same network.**
 
+If you checked and all is good your network might not support udp broadcast. In this case connect manually by providing the ```-host``` parameter.
+
 #### There is an error with **JVM_Bind**...
 WindowHockey uses port ```8228``` by default. This error message means that there is already something running on this port
 
@@ -33,6 +35,7 @@ Game settings like ```-slow``` or ```-fast``` are defined by the machine who sta
 | Command | Description |
 | --- | --- |
 |```-left -right```|Define on which side your machine is located.|
+|```-h -host```|Specify the machine to connect to.|
 |```-p -port```|Specify custom port.|
 |```-slow -fast```|Game speed.|
 |```-continue```|Starts searching for new game after old one ends.|

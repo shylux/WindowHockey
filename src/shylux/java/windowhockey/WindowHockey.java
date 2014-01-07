@@ -83,8 +83,6 @@ public class WindowHockey implements IConnectionListener {
 			state = tframe.getState();
 			state = GameState.processEntryPoint(state, profile.getExitBinding(), this);
 			processTick();
-			puck.setVisible(true);
-			coverlay.setVisible(true);
 			render();
 		}
 		if (o instanceof GameEndFrame) {
