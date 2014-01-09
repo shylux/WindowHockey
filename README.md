@@ -5,6 +5,8 @@ WindowHockey is an air hockey like game for your pc.
 
 It is played by align two computers screen to screen. The game board is then both of your screens and the air hockey puck is will travel from one screen to the other.
 
+This project is hosted on GitHub: https://github.com/shylux/WindowHockey
+
 How to play
 -----------
 
